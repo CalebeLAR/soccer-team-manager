@@ -1,4 +1,6 @@
-// src/server.js
 const app = require('./app');
 
-app.listen(3003, () => console.log('Servidor online na porta 3003'));
+const PORT = 3000;
+
+app.listen(3000, () => console.log(`Aplicação rodando na porta ${PORT}`));
+
