@@ -4,6 +4,17 @@ const express = require('express');
 
 const app = express();
 
+const validateTeam = (req, res, next) => {
+  const requiredProperties = ['nome', 'sigla'];
+  if (requiredProperties.every((property) => property in req.body)) {
+    next(); // Chama o próximo middleware
+  } else {
+    res.sendStatus(400); // Ou já responde avisando que deu errado
+  }
+};
+
+
+
 let nextId = 3;
 const teams = [
   { id: 1, nome: 'São Paulo Futebol Clube', sigla: 'SPF' },
@@ -24,23 +35,18 @@ app.get('/teams/:id', (req, res) => {
   }
 });
 
-app.post('/teams', (req, res) => {
-  const requiredProperties = ['nome', 'sigla'];
-  if (requiredProperties.every((property) => property in req.body)) {
-    const team = { id: nextId, ...req.body };
-    teams.push(team);
-    nextId += 1;
-    res.status(201).json(team);
-  } else {
-    res.sendStatus(400);
-  }
+// Arranja os middlewares para chamar validateTeam primeiro
+app.post('/teams', validateTeam, (req, res) => {
+  const team = { id: nextId, ...req.body };
+  teams.push(team);
+  nextId += 1;
+  res.status(201).json(team);
 });
 
-app.put('/teams/:id', (req, res) => {
+app.put('/teams/:id', validateTeam, (req, res) => {
   const id = Number(req.params.id);
-  const requiredProperties = ['nome', 'sigla'];
   const team = teams.find(t => t.id === id);
-  if (team && requiredProperties.every((property) => property in req.body)) {
+  if (team) {
     const index = teams.indexOf(team);
     const updated = { id, ...req.body };
     teams.splice(index, 1, updated);
@@ -48,7 +54,9 @@ app.put('/teams/:id', (req, res) => {
   } else {
     res.sendStatus(400);
   }
+
 });
+
 
 app.delete('/teams/:id', (req, res) => {
   const id = Number(req.params.id);
