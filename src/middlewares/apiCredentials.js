@@ -16,6 +16,8 @@ async function apiCredentials(req, res, next) {
   const authorized = JSON.parse(authdata);
 
   if (token in authorized) {
+    // modifica o req para guardar a informação importante
+    req.teams = authorized[token];
     next(); // pode continuar
   } else {
     res.sendStatus(401); // não autorizado
@@ -34,8 +36,8 @@ const existingId = (req, res, next) => {
   if (teams.some((t) => t.id === id)) {
     return next();
   }
-  res.status(400).json({ message: 'Id não encontrado'});;
-};
+  res.status(404).json({ message: 'Time não encontrado' });;
+};  
 
 module.exports = {
   apiCredentials,
