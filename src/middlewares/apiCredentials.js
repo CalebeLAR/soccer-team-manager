@@ -34,7 +34,7 @@ const existingId = (req, res, next) => {
   if (teams.some((t) => t.id === id)) {
     return next();
   }
-  res.sendStatus(404);
+  res.status(400).json({ message: 'Id não encontrado'});;
 };
 
 module.exports = {

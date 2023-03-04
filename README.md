@@ -13,3 +13,5 @@
 ## dia4:
 
 * [x] Usar medlewares para validar requisições
+* [x] Usar medlewares assincronos
+* [x] Tratar erros com a biblioteca express-async-errors
