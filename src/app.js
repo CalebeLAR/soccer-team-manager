@@ -1,41 +1,22 @@
-// src/app.js
-
 const express = require('express');
-
-const app = express();
-
-const validateTeam = (req, res, next) => {
-  const requiredProperties = ['nome', 'sigla'];
-  if (requiredProperties.every((property) => property in req.body)) {
-    next(); // Chama o próximo middleware
-  } else {
-    res.sendStatus(400); // Ou já responde avisando que deu errado
-  }
-};
-
-
+require('express-async-errors'); // não precisa definir uma variável
+const { apiCredentials, validateTeam, existingId, teams} = require('./middlewares/apiCredentials');
 
 let nextId = 3;
-const teams = [
-  { id: 1, nome: 'São Paulo Futebol Clube', sigla: 'SPF' },
-  { id: 2, nome: 'Sociedade Esportiva Palmeiras', sigla: 'PAL' },
-];
 
+const app = express();
 app.use(express.json());
 
 app.get('/teams', (req, res) => res.json(teams));
 
-app.get('/teams/:id', (req, res) => {
+app.use(apiCredentials);
+
+app.get("/teams/:id", existingId, (req, res) => {
   const id = Number(req.params.id);
   const team = teams.find(t => t.id === id);
-  if (team) {
-    res.json(team);
-  } else {
-    res.sendStatus(404);
-  }
+  res.json(team);
 });
 
-// Arranja os middlewares para chamar validateTeam primeiro
 app.post('/teams', validateTeam, (req, res) => {
   const team = { id: nextId, ...req.body };
   teams.push(team);
@@ -43,28 +24,19 @@ app.post('/teams', validateTeam, (req, res) => {
   res.status(201).json(team);
 });
 
-app.put('/teams/:id', validateTeam, (req, res) => {
+app.put('/teams/:id', existingId ,validateTeam, (req, res) => {
   const id = Number(req.params.id);
-  const team = teams.find(t => t.id === id);
-  if (team) {
-    const index = teams.indexOf(team);
-    const updated = { id, ...req.body };
-    teams.splice(index, 1, updated);
-    res.status(201).json(updated);
-  } else {
-    res.sendStatus(400);
-  }
-
+  const index = teams.findIndex((t)=> t.id === id);
+  const updatedTeam = { id, ...req.body }
+  teams.splice(index, 1, updatedTeam)
+  res.status(201).json(teams);
 });
 
-
-app.delete('/teams/:id', (req, res) => {
+app.delete('/teams/:id', existingId, (req, res) => {
   const id = Number(req.params.id);
   const team = teams.find(t => t.id === id);
-  if (team) {
-    const index = teams.indexOf(team);
-    teams.splice(index, 1);
-  }
+  const index = teams.indexOf(team);
+  teams.splice(index, 1);
   res.sendStatus(204);
 });
 
